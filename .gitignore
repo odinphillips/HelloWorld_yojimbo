@@ -1,0 +1,22 @@
+build/
+
+*.dll
+*.exe
+*.obj
+
+*.so
+*.a
+
+# for CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+cmake_uninstall.cmake
+SDL3ConfigVersion.cmake
+.ninja_*
+*.ninja
+compile_commands.json
+.cache/
+
+# for Visual Studio Code
+.vscode/
