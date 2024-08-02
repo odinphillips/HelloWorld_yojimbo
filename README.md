@@ -80,7 +80,7 @@ make -j
 <details>
 <summary>Error logs</summary>
 
-```bash  
+```log
 odinp@Moon UCRT64 /deps/yojimbo-1.2.3
 $ make -j
 ==== Building sodium-builtin (debug) ====
