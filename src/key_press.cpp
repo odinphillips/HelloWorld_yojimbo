@@ -12,7 +12,7 @@
 #endif
 
 // Function to set the terminal into raw mode
-void setRawMode(bool enable) {
+void setTerminalRawMode(bool enable) {
 #if defined(__linux)
     static struct termios oldt, newt;
     if (enable) {
@@ -30,7 +30,7 @@ void setRawMode(bool enable) {
 }
 
 // Function to check if a key is pressed
-bool kbhit() {
+bool keyHit() {
 #if defined(_WIN32) || defined(WIN32)
     return (bool)_kbhit();
 #elif defined(__linux)
@@ -43,7 +43,7 @@ bool kbhit() {
 }
 
 // Function to get the pressed key
-int getch() {
+int getKey() {
 #if defined(_WIN32) || defined(WIN32)
     return _getch();
 #elif defined(__linux)

@@ -56,9 +56,9 @@ void GameClient::Update(float dt) {
         // ... do connected stuff ...
 
         // send a message when space is pressed
-        setRawMode(true);
-        if (kbhit()) {
-            char ch = getch();
+        setTerminalRawMode(true);
+        if (keyHit()) {
+            char ch = getKey();
             if (ch == 'q') {
                 m_running = false;
             }
@@ -69,7 +69,7 @@ void GameClient::Update(float dt) {
                 m_client.SendMessage((int)GameChannel::RELIABLE, message);
             }
         }
-        setRawMode(false);
+        setTerminalRawMode(false);
     }
 
     m_client.SendPackets();

@@ -2,6 +2,6 @@
 
 // Helper functions for non-blocking keyboard input
 
-void setRawMode(bool enable);
-bool kbhit();
-int getch();
+void setTerminalRawMode(bool enable);
+bool keyHit();
+int getKey();
