@@ -654,3 +654,11 @@ The client program has the following key inputs:
 - Press \<Q\> to disconnect and quit the client program.
 
 Then server program can be terminated with \<Ctrl-C\>.
+
+## Connecting a Windows Client to a Linux (container) Server
+
+```bash
+docker run -it -p 40000:40000/udp helloworld_yojimbo:3 /bin/bash
+```
+
+TODO: flesh out this section some more...
