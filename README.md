@@ -78,7 +78,7 @@ make -j
 >
 
 <details>
-<summary>Error logs</summary>
+<summary><b><u>Error logs</u></b></summary>
 
 ```bash  
 odinp@Moon UCRT64 /deps/yojimbo-1.2.3
@@ -264,7 +264,7 @@ I managed to fix all these errors, albeit with some hacking in their codebase. F
 *(**NOTE**: the patch file is available in `/patch` directory of this repo.)*
 
 <details>
-<summary>yojimbo_v1.2.3_windows_msys_ucrt.patch</summary>
+<summary><b><u>yojimbo_v1.2.3_windows_msys_ucrt.patch</u></b></summary>
 
 ```diff
 diff --git a/netcode/netcode.c b/netcode/netcode.c
