@@ -1,0 +1,171 @@
+diff --git a/netcode/netcode.c b/netcode/netcode.c
+index e975614..e7dcef0 100755
+--- a/netcode/netcode.c
++++ b/netcode/netcode.c
+@@ -148,15 +148,17 @@ void netcode_default_free_function( void * context, void * pointer )
+     #include <ws2tcpip.h>
+     #include <ws2ipdef.h>
+     #include <iphlpapi.h>
+-    #pragma comment( lib, "WS2_32.lib" )
+-    #pragma comment( lib, "IPHLPAPI.lib" )
++    // NOTE(odin)
++    // #pragma comment( lib, "WS2_32.lib" )
++    // #pragma comment( lib, "IPHLPAPI.lib" )
+ 
+     #ifdef SetPort
+     #undef SetPort
+     #endif // #ifdef SetPort
+ 
+     #include <iphlpapi.h>
+-    #pragma comment( lib, "IPHLPAPI.lib" )
++    // NOTE(odin)
++    // #pragma comment( lib, "IPHLPAPI.lib" )
+     
+ #elif NETCODE_PLATFORM == NETCODE_PLATFORM_MAC || NETCODE_PLATFORM == NETCODE_PLATFORM_UNIX
+ 
+@@ -180,7 +182,9 @@ void netcode_default_free_function( void * context, void * pointer )
+ 
+ // ----------------------------------------------------------------
+ 
+-#ifdef __MINGW32__
++// NOTE(odin)
++// #ifdef __MINGW32__
++#if 0
+     const char *inet_ntop(int af, const void *src, char *dst, socklen_t cnt)
+     {
+         if ( af == AF_INET )
+@@ -642,7 +646,9 @@ int netcode_socket_create( struct netcode_socket_t * s, struct netcode_address_t
+     s->handle = socket( ( address->type == NETCODE_ADDRESS_IPV6 ) ? AF_INET6 : AF_INET, SOCK_DGRAM, IPPROTO_UDP );
+ 
+ #if NETCODE_PLATFORM == NETCODE_PLATFORM_WINDOWS
+-    if ( s->handle == INVALID_SOCKET )
++    // NOTE(odin)
++    // if ( s->handle == INVALID_SOCKET )
++    if ( s->handle == (netcode_socket_handle_t)(INVALID_SOCKET) )
+ #else // #if NETCODE_PLATFORM == NETCODE_PLATFORM_WINDOWS
+     if ( s->handle <= 0 )
+ #endif // #if NETCODE_PLATFORM == NETCODE_PLATFORM_WINDOWS
+diff --git a/premake5.lua b/premake5.lua
+index f2f1f71..aec4235 100644
+--- a/premake5.lua
++++ b/premake5.lua
+@@ -61,38 +61,58 @@ project "yojimbo"
+ project "client"
+     files { "client.cpp", "shared.h" }
+     filter "system:windows"
+-        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+     filter "system:not windows"
+-        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++        -- NOTE(odin)
++		-- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++		links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+ 
+ project "server"
+     files { "server.cpp", "shared.h" }
+     filter "system:windows"
+-        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+     filter "system:not windows"
+-        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++        -- NOTE(odin)
++		-- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++		links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+ 
+ project "loopback"
+     files { "loopback.cpp", "shared.h" }
+     filter "system:windows"
+-        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+     filter "system:not windows"
+-        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+ 
+ project "soak"
+     files { "soak.cpp", "shared.h" }
+     filter "system:windows"
+-        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+     filter "system:not windows"
+-        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+ 
+ project "test"
+     files { "test.cpp" }
+     defines { "SERIALIZE_ENABLE_TESTS=1" }
+     filter "system:windows"
+-        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++		-- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
++		links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi"}
+     filter "system:not windows"
+-        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++		-- NOTE(odin)
++        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
++        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+ 
+ newaction
+ {
+diff --git a/sodium/sodium_randombytes_salsa20_random.c b/sodium/sodium_randombytes_salsa20_random.c
+index 2cf65f5..d3bbf37 100644
+--- a/sodium/sodium_randombytes_salsa20_random.c
++++ b/sodium/sodium_randombytes_salsa20_random.c
+@@ -91,7 +91,9 @@ BOOLEAN NTAPI RtlGenRandom(PVOID RandomBuffer, ULONG RandomBufferLength);
+ 
+ #ifndef TLS
+ # ifdef _WIN32
+-#  define TLS __declspec(thread)
++// NOTE(odin)
++// #  define TLS __declspec(thread)
++#  define TLS __thread
+ # else
+ #  define TLS
+ # endif
+diff --git a/source/yojimbo_address.cpp b/source/yojimbo_address.cpp
+index e06d3f0..59e2f5b 100644
+--- a/source/yojimbo_address.cpp
++++ b/source/yojimbo_address.cpp
+@@ -28,12 +28,15 @@
+ 
+ #if YOJIMBO_PLATFORM == YOJIMBO_PLATFORM_WINDOWS
+ 
++    // NOTE(odin): I added #ifndef
++    #ifndef NOMINMAX
+     #define NOMINMAX
++    #endif
+     #define _WINSOCK_DEPRECATED_NO_WARNINGS
+     #include <winsock2.h>
+     #include <ws2tcpip.h>
+     #include <ws2ipdef.h>
+-    #pragma comment( lib, "WS2_32.lib" )
++    // #pragma comment( lib, "WS2_32.lib" )  // NOTE(odin): I commented this out!
+ 
+     #ifdef SetPort
+     #undef SetPort
+diff --git a/source/yojimbo_platform.cpp b/source/yojimbo_platform.cpp
+index ba28537..638a0a1 100644
+--- a/source/yojimbo_platform.cpp
++++ b/source/yojimbo_platform.cpp
+@@ -168,7 +168,10 @@ double yojimbo_time()
+ //             Windows
+ // ===============================
+ 
++// NOTE(odin): I added #ifndef
++#ifndef NOMINMAX
+ #define NOMINMAX
++#endif
+ #include <windows.h>
+ 
+ void yojimbo_sleep( double time )
