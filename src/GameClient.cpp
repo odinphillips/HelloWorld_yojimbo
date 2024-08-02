@@ -1,12 +1,13 @@
 #include "GameClient.h"
 
-#include "key_press.h"
+// #include "key_press.h"
 
 #include <iostream>
 
-#include <termios.h>
-#include <unistd.h>
-#include <fcntl.h>
+// #include <termios.h>
+// #include <unistd.h>
+// #include <fcntl.h>
+#include <conio.h>
 
 static const uint8_t DEFAULT_PRIVATE_KEY[yojimbo::KeyBytes] = { 0 };
 
@@ -60,9 +61,11 @@ void GameClient::Update(float dt) {
         // ... do connected stuff ...
 
         // send a message when space is pressed
-        setRawMode(true);
-        if (kbhit()) {
-            char ch = getch();
+        // setRawMode(true);
+        // if (kbhit()) {
+        if (_kbhit()) {
+            // char ch = getch();
+            char ch = _getch();
             if (ch == 'q') {
                 m_running = false;
             }
@@ -73,7 +76,7 @@ void GameClient::Update(float dt) {
                 m_client.SendMessage((int)GameChannel::RELIABLE, message);
             }
         }
-        setRawMode(false);
+        // setRawMode(false);
     }
 
     m_client.SendPackets();
