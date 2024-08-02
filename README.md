@@ -1,6 +1,6 @@
 # HelloWorld_yojimbo
 
-Quickstart for using the yojimbo network library for client/server games written in C++
+Quickstart for using the yojimbo network library for UDP client/server games written in C++
 
 **Note: this guide is for Windows users.**
 

@@ -58,7 +58,7 @@ include_directories(
 
 set(CLIENT_SRCS
     "${CMAKE_SOURCE_DIR}/src/GameAdapter.cpp"
-    # "${CMAKE_SOURCE_DIR}/src/key_press.cpp"
+    "${CMAKE_SOURCE_DIR}/src/key_press.cpp"
     "${CMAKE_SOURCE_DIR}/src/GameServer.cpp"
     "${CMAKE_SOURCE_DIR}/src/GameClient.cpp"
     "${CMAKE_SOURCE_DIR}/src/main_game_client.cpp"
