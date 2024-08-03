@@ -15,7 +15,7 @@ For now, we will consider two ways of installing the yojimbo library:
 
 First, download and install [premake 5](https://premake.github.io/download) for windows.
 
-And add its path to the PATH variable (e.g. in msys `ucrt` terminal, update the `~/.bash_profile` to include it in the PATH).
+Add its path to the PATH variable (e.g. in msys `ucrt` terminal, update the `~/.bash_profile` to include it in the PATH).
 
 E.g. open an msys ucrt terminal.
 
@@ -451,7 +451,7 @@ Run the unit tests:
 ./bin/test
 ```
 
-Run the server test program on localhost on UDP port 40000
+Run the server test program (defaults to localhost on UDP port 40000)
 
 ```
 ./bin/server
@@ -464,6 +464,11 @@ And in a separate terminal run the client program
 ```
 
 ## HelloWorld_yojimbo (Windows)
+
+**NOTE:** The actual HelloWorld_yojimbo C++ example follows closely the `USAGE.md` repo file located here, with some tweaks:
+
+`/deps/yojimbo-1.2.3/USAGE.md`
+
 
 Clone the repo if you haven't already done so.
 
@@ -544,10 +549,6 @@ We are now close to being able to build yojimbo. The rest of the steps follow cl
 
 `/deps/yojimbo-1.2.3/BUILDING.md`
 
-And the actual HelloWorld_yojimbo C++ example follows closely the `USAGE.md` repo file located here, with some tweaks:
-
-`/deps/yojimbo-1.2.3/USAGE.md`
-
 Next, install some common dev tools:
 
 ```
@@ -586,7 +587,7 @@ Run the unit tests:
 container# ./bin/test
 ```
 
-Run the server test program on localhost on UDP port 40000
+Run the server test program (defaults to localhost on UDP port 40000)
 
 ```
 container# ./bin/server
@@ -613,6 +614,10 @@ container# ./bin/client
 
 ## HelloWorld_yojimbo (Linux)
 
+The actual HelloWorld_yojimbo C++ example follows closely the `USAGE.md` repo file located here, with some tweaks:
+
+`/deps/yojimbo-1.2.3/USAGE.md`
+
 Clone the repo if you haven't already done so.
 
 ```
@@ -623,11 +628,11 @@ container# git clone https://github.com/odinphillips/HelloWorld_yojimbo.git
 ## Build
 
 ```
-cd HelloWorld_yojimbo
-mkdir build
-cd build
-cmake ..
-make -j
+container# cd HelloWorld_yojimbo
+container# mkdir build
+container# cd build
+container# cmake ..
+container# make -j
 ```
 
 Two executable files should have been created in the current `build/` directory.
