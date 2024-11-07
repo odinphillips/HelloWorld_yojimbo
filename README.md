@@ -68,9 +68,440 @@ Now you can start building the library.
 ```
 cd /deps/yojimbo-1.2.3
 premake5 gmake
-make -j
+make -j4
 ```
+NOTE: for building with clang compiler change the above premake5 line to:
+```
+premake5 --cc=clang gmake
+```
+There will most likely be some build errors, see `yojimbo_v1.2.3_windows_msys_ucrt.patch` below...
+
 ...
+
+Here are other build configurations for both clang and gcc:
+
+<details>
+<summary><b><u>SDL clang build Debug</u></b></summary>
+
+```
+premake5 --cc=clang gmake
+make config=debug -j8
+# see build result in `bin/Debug`
+```
+
+</details>
+
+<details>
+<summary><b><u>SDL clang build Debug ASAN</u></b></summary>
+
+```
+premake5 --cc=clang gmake
+make config=debug_asan -j8
+# see build result in `bin/Debug_ASAN`
+```
+
+</details>
+
+<details>
+<summary><b><u>SDL clang build Release</u></b></summary>
+
+```
+premake5 --cc=clang gmake
+make config=release -j8
+# see build result in `bin/Release`
+```
+
+</details>
+
+<details>
+<summary><b><u>SDL clang build Release ASAN</u></b></summary>
+
+```
+premake5 --cc=clang gmake
+make config=release_asan -j8
+# see build result in `bin/Release_ASAN`
+```
+
+</details>
+
+<details>
+<summary><b><u>SDL clang build RelWithDebInfo</u></b></summary>
+
+```
+premake5 --cc=clang gmake
+make config=relwithdebinfo -j8
+# see build result in `bin/RelWithDebInfo`
+```
+
+</details>
+
+<details>
+<summary><b><u>SDL clang build RelWithDebInfo ASAN</u></b></summary>
+
+```
+premake5 --cc=clang gmake
+make config=relwithdebinfo_asan -j8
+# see build result in `bin/RelWithDebInfo_ASAN`
+```
+
+</details>
+
+<details>
+<summary><b><u>clang patch</u></b></summary>
+
+```diff
+netcode/netcode.c:644
+#if NETCODE_PLATFORM == NETCODE_PLATFORM_WINDOWS
+-    // if ( s->handle == INVALID_SOCKET )
++    // NOTE(odin)
++    // if ( s->handle == INVALID_SOCKET )
++    if ( s->handle == (netcode_socket_handle_t)(INVALID_SOCKET) )
+#else // #if NETCODE_PLATFORM == NETCODE_PLATFORM_WINDOWS
+```
+
+```lua
+-- premake5.lua
+
+yojimbo_version = "1.0"
+
+solution "Yojimbo"
+    kind "ConsoleApp"
+    language "C++"
+    configurations { "Debug", "Release", "RelWithDebInfo", "Debug_ASAN", "Release_ASAN", "RelWithDebInfo_ASAN" }
+    includedirs { ".", "include", "sodium", "tlsf", "netcode", "reliable", "serialize" }
+    if not os.istarget "windows" then
+        targetdir "bin/"  
+    end
+    rtti "Off"
+    warnings "Extra"
+    flags { "FatalWarnings" }
+    floatingpoint "Fast"
+    filter "configurations:Debug"
+        symbols "On"
+        defines { "YOJIMBO_DEBUG", "NETCODE_DEBUG", "RELIABLE_DEBUG" }
+    filter "configurations:Release"
+        symbols "Off"
+        optimize "Speed"
+        defines { "YOJIMBO_RELEASE", "NETCODE_RELEASE", "RELIABLE_RELEASE" }
+    filter "configurations:RelWithDebInfo"
+        defines { "NDEBUG" }
+        optimize "On"
+        symbols "On"
+        defines { "YOJIMBO_RELEASE", "NETCODE_RELEASE", "RELIABLE_RELEASE" }
+    filter "configurations:Debug_ASAN"
+        symbols "On"
+        defines { "YOJIMBO_DEBUG", "NETCODE_DEBUG", "RELIABLE_DEBUG" }
+        -- buildoptions { "-fsanitize=address", "-nodefaultlibs" }
+        buildoptions { "-fsanitize=address" }
+        linkoptions { "-fsanitize=address" }
+    filter "configurations:Release_ASAN"
+        symbols "Off"
+        optimize "Speed"
+        defines { "YOJIMBO_RELEASE", "NETCODE_RELEASE", "RELIABLE_RELEASE" }
+        -- buildoptions { "-fsanitize=address", "-nodefaultlibs" }
+        buildoptions { "-fsanitize=address",}
+        linkoptions { "-fsanitize=address" }
+    filter "configurations:RelWithDebInfo_ASAN"
+        defines { "NDEBUG" }
+        optimize "On"
+        symbols "On"
+        defines { "YOJIMBO_RELEASE", "NETCODE_RELEASE", "RELIABLE_RELEASE" }
+        -- buildoptions { "-fsanitize=address", "-nodefaultlibs" }
+        buildoptions { "-fsanitize=address" }
+        linkoptions { "-fsanitize=address" }
+
+project "sodium-builtin"
+    kind "StaticLib"
+    language "C"
+    files { "sodium/dummy.c" }
+    filter "system:windows"
+            files {
+                "sodium/**.c",
+                "sodium/**.h",
+            }
+        filter { "system:not windows", "platforms:*x64 or *avx or *avx2" }
+            files {
+                "sodium/**.S"
+            }
+        filter { "action:gmake*" }
+            buildoptions { "-Wno-unused-parameter", "-Wno-unused-function", "-Wno-unknown-pragmas", "-Wno-unused-variable", "-Wno-type-limits", "-Wno-macro-redefined", "-mssse3", "-msse4.1" }
+
+project "netcode"
+    kind "StaticLib"
+    language "C"
+    defines { "NETCODE_ENABLE_TESTS=1" }
+    files { "netcode/netcode.c", "netcode/netcode.h" }
+    buildoptions { "-Wno-incompatible-pointer-types-discards-qualifiers" }
+
+project "reliable"
+    kind "StaticLib"
+    language "C"
+    defines { "RELIABLE_ENABLE_TESTS=1" }
+    files { "reliable/reliable.c", "reliable/reliable.h" }
+    buildoptions { "-Wno-incompatible-pointer-types-discards-qualifiers" }
+
+project "tlsf"
+    kind "StaticLib"
+    language "C"
+    files { "tlsf/tlsf.c", "tlsf/tlsf.h" }
+
+project "yojimbo"
+    kind "StaticLib"
+    files { "include/*.h", "source/*.cpp" }
+
+project "client"
+    files { "client.cpp", "shared.h" }
+    filter "system:windows"
+        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+    filter "system:not windows"
+        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+
+project "server"
+    files { "server.cpp", "shared.h" }
+    filter "system:windows"
+        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+    filter "system:not windows"
+        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+
+project "loopback"
+    files { "loopback.cpp", "shared.h" }
+    filter "system:windows"
+        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+    filter "system:not windows"
+        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+
+project "soak"
+    files { "soak.cpp", "shared.h" }
+    filter "system:windows"
+        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+    filter "system:not windows"
+        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+
+project "test"
+    files { "test.cpp" }
+    defines { "SERIALIZE_ENABLE_TESTS=1" }
+    filter "system:windows"
+        links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+    filter "system:not windows"
+        links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+
+newaction
+{
+    trigger     = "clean",
+
+    description = "Clean all build files and output",
+
+    execute = function ()
+
+        files_to_delete = 
+        {
+            "Makefile",
+            "*.make",
+            "*.txt",
+            "*.zip",
+            "*.tar.gz",
+            "*.db",
+            "*.opendb",
+            "*.vcproj",
+            "*.vcxproj",
+            "*.vcxproj.user",
+            "*.vcxproj.filters",
+            "*.sln",
+            "*.xcodeproj",
+            "*.xcworkspace"
+        }
+
+        directories_to_delete = 
+        {
+            "obj",
+            "ipch",
+            "bin",
+            ".vs",
+            "Debug",
+            "Release",
+            "release",
+            "cov-int",
+            "docker/yojimbo",
+            "valgrind/yojimbo",
+            "docs",
+            "xml"
+        }
+
+        for i,v in ipairs( directories_to_delete ) do
+          os.rmdir( v )
+        end
+
+        if not os.istarget "windows" then
+            os.execute "find . -name .DS_Store -delete"
+            for i,v in ipairs( files_to_delete ) do
+              os.execute( "rm -f " .. v )
+            end
+        else
+            for i,v in ipairs( files_to_delete ) do
+              os.execute( "del /F /Q  " .. v )
+            end
+        end
+
+    end
+}
+```
+
+</details>
+
+If you have carried out any of the clang builds above, rename or move the bin/<DIRS> to a separate clang directory. e.g. `mv bin bin_clang` and then run `premake5 clean` before trying the following gcc builds.
+
+<details>
+<summary><b><u>SDL gcc build Debug</u></b></summary>
+
+```
+premake5 --cc=gcc gmake
+make config=debug -j8
+# see build result in `bin/Debug`
+```
+
+</details>
+
+<details>
+<summary><b><u>SDL gcc build Release</u></b></summary>
+
+```
+premake5 --cc=gcc gmake
+make config=release -j8
+# see build result in `bin/Release`
+```
+
+build errors:
+
+```sh
+$ make config=release -j8
+==== Building sodium-builtin (release) ====
+==== Building netcode (release) ====
+==== Building reliable (release) ====
+==== Building tlsf (release) ====
+==== Building yojimbo (release) ====
+reliable.c
+In function 'reliable_endpoint_send_packet',
+    inlined from 'test_sequence_buffer_rollover' at reliable/reliable.c:2241:9:
+reliable/reliable.c:774:9: error: 'packet_data' may be used uninitialized [-Werror=maybe-uninitialized]
+  774 |         memcpy( transmit_packet_data + packet_header_bytes, packet_data, packet_bytes );
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+reliable/reliable.c: In function 'test_sequence_buffer_rollover':
+reliable/reliable.c:2238:17: note: 'packet_data' declared here
+ 2238 |         uint8_t packet_data[16];
+      |                 ^~~~~~~~~~~
+In function 'reliable_endpoint_send_packet',
+    inlined from 'test_sequence_buffer_rollover' at reliable/reliable.c:2241:9:
+reliable/reliable.c:827:13: error: 'packet_data' may be used uninitialized [-Werror=maybe-uninitialized]
+  827 |             memcpy( p, q, bytes_to_copy );
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+reliable/reliable.c: In function 'test_sequence_buffer_rollover':
+reliable/reliable.c:2238:17: note: 'packet_data' declared here
+ 2238 |         uint8_t packet_data[16];
+      |                 ^~~~~~~~~~~
+At top level:
+cc1.exe: note: unrecognized command-line option '-Wno-incompatible-pointer-types-discards-qualifiers' may have been intended to silence earlier diagnostics
+cc1.exe: all warnings being treated as errors
+make[1]: *** [reliable.make:237: obj/Release/reliable/reliable.o] Error 1
+make: *** [Makefile:105: reliable] Error 2
+
+```
+
+patch:
+
+```diff
+...
+project "reliable"
+    kind "StaticLib"
+    language "C"
+    defines { "RELIABLE_ENABLE_TESTS=1" }
+    files { "reliable/reliable.c", "reliable/reliable.h" }
+    -- buildoptions { "-Wno-incompatible-pointer-types-discards-qualifiers" }
++    buildoptions { "-Wno-incompatible-pointer-types-discards-qualifiers", "-Wno-error=maybe-uninitialized" }
+
+project "tlsf"
+    kind "StaticLib"
+    language "C"
+    files { "tlsf/tlsf.c", "tlsf/tlsf.h" }
+
+project "yojimbo"
+    kind "StaticLib"
+    files { "include/*.h", "source/*.cpp" }
++    buildoptions { "-Wno-error=maybe-uninitialized" }
+
+project "client"
+    files { "client.cpp", "shared.h" }
+    filter "system:windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+    filter "system:not windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+
+project "server"
+    files { "server.cpp", "shared.h" }
+    filter "system:windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+    filter "system:not windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+
+project "loopback"
+    files { "loopback.cpp", "shared.h" }
+    filter "system:windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+    filter "system:not windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+
+project "soak"
+    files { "soak.cpp", "shared.h" }
+    filter "system:windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+    filter "system:not windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
+
+project "test"
+    files { "test.cpp" }
+    defines { "SERIALIZE_ENABLE_TESTS=1" }
+    filter "system:windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium-builtin", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi"}
++        buildoptions { "-Wno-error=maybe-uninitialized" }
+    filter "system:not windows"
+        -- NOTE(odin)
+        -- links { "yojimbo", "sodium", "tlsf", "netcode", "reliable" }
+        links { "yojimbo", "sodium-builtin", "sodium", "tlsf", "netcode", "reliable", "WS2_32", "iphlpapi" }
++        buildoptions { "-Wno-error=maybe-uninitialized" }
+...
+```
+
+</details>
+
+<details>
+<summary><b><u>SDL gcc build RelWithDebInfo</u></b></summary>
+
+```
+premake5 --cc=gcc gmake
+make config=relwithdebinfo -j8
+# see build result in `bin/RelWithDebInfo`
+```
+
+</details>
+
+--
 
 > WARNING!
 >
@@ -448,19 +879,19 @@ index ba28537..638a0a1 100644
 Run the unit tests:
 
 ```
-./bin/test
+./bin/Debug/test
 ```
 
 Run the server test program (defaults to localhost on UDP port 40000)
 
 ```
-./bin/server
+./bin/Debug/server
 ```
 
 And in a separate terminal run the client program
 
 ```
-./bin/client
+./bin/Debug/client
 ```
 
 ## HelloWorld_yojimbo (Windows)
